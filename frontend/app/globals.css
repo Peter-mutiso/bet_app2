@@ -285,7 +285,22 @@ body {
   display: grid;
 
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
+
+  /* auto, not 1fr: a 1fr row track stretches to fill this grid's full
+     height:100% box even when the two rows of small, fixed-size circles
+     need far less than that — align-items:center then centers each row's
+     content inside its own oversized track, which is what actually
+     produced the huge gap between row 1 and row 2 (the declared row-gap
+     below was never the cause). auto sizes each row to its real content
+     height instead, so row-gap becomes the only thing controlling the
+     space between the rows. */
+  grid-template-rows: repeat(2, auto);
+
+  /* With auto rows, any leftover height in this box (it's still
+     height:100% of its flex-1 parent) is no longer eaten by the row
+     tracks — align-content centers the compact 2-row block as a whole
+     within that space instead of leaving it pinned to the top. */
+  align-content: center;
 
   width: 100%;
   height: 100%;
@@ -431,7 +446,10 @@ body {
 @media (max-width: 639px) {
   .digit-grid {
     column-gap: 0.2rem;
-    row-gap: 0.2rem;
+    /* A deliberate, balanced row gap — now that rows are auto-sized
+       (not stretched), this is the actual visible gap between the two
+       rows of circles, not a value fighting against track-stretch. */
+    row-gap: 0.6rem;
   }
 
   .digit-circle-shell {
@@ -468,7 +486,7 @@ body {
 @media (max-width: 360px) {
   .digit-grid {
     column-gap: 0.1rem;
-    row-gap: 0.1rem;
+    row-gap: 0.5rem;
   }
 
   .digit-circle-shell {
@@ -501,7 +519,7 @@ body {
 @media (max-height: 680px) {
   .digit-grid {
     column-gap: 0.15rem;
-    row-gap: 0.15rem;
+    row-gap: 0.4rem;
   }
 
   .digit-circle-shell {
