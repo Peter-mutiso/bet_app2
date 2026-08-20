@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum TradeStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET
+  WIN
+  BONUS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String?
+  googleId     String?  @unique
+
+  role   UserRole   @default(USER)
+  status UserStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallet        Wallet?
+  trades        Trade[]
+  refreshTokens RefreshToken[]
+}
+
+model Wallet {
+  id String @id @default(cuid())
+
+  balance Decimal @default(0.00) @db.Decimal(18, 2)
+
+  currency String @default("KES")
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions WalletTransaction[]
+
+  createdAt DateTime @default(now())
+}
+
+model Trade {
+  id String @id @default(cuid())
+
+  symbol String @default("R_100")
+
+  contractType String
+
+  barrier Int?
+
+  prediction String?
+
+  entryPrice Decimal  @db.Decimal(18, 4)
+  exitPrice  Decimal? @db.Decimal(18, 4)
+
+  entryTick Int
+  exitTick  Int?
+
+  tickDuration Int @default(1)
+
+  stake  Decimal  @db.Decimal(18, 2)
+  payout Decimal  @db.Decimal(18, 2)
+  profit Decimal? @db.Decimal(18, 2)
+
+  status TradeStatus @default(OPEN)
+
+  createdAt DateTime  @default(now())
+  settledAt DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([symbol])
+}
+
+model WalletTransaction {
+  id String @id @default(cuid())
+
+  amount Decimal @db.Decimal(18, 2)
+
+  type TransactionType
+
+  description String?
+
+  reference String?
+
+  createdAt DateTime @default(now())
+
+  walletId String
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+}
+
+model RefreshToken {
+  id String @id @default(cuid())
+
+  tokenHash String
+
+  expiresAt DateTime
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model MarketPrice {
+  id String @id @default(cuid())
+
+  symbol String
+
+  price Decimal @db.Decimal(18, 4)
+
+  tick Int
+
+  createdAt DateTime @default(now())
+
+  @@index([symbol, createdAt])
+}

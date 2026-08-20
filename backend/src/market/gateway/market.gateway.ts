@@ -1,0 +1,20 @@
+import {
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+
+import { Server } from 'socket.io';
+
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
+export class MarketGateway {
+  @WebSocketServer()
+  server: Server;
+
+  broadcastTick(tick: any) {
+    this.server.emit('tick', tick);
+  }
+}
