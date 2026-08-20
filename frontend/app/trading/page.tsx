@@ -54,18 +54,24 @@ export default function TradingPage() {
               the clip boundary — never overflow-y-auto/scroll. Risk
               Disclaimer lives here (left side of the page), as a small
               button that only takes the width it needs. */}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-[var(--section-gap)] overflow-hidden md:col-span-2 md:pr-1">
+          <div className="flex min-h-0 min-w-0 flex-col gap-[var(--section-gap)] overflow-hidden md:flex-1 md:col-span-2 md:pr-1">
             <div className={`${PANEL_CLASSES} shrink-0`}>
               <DigitTicker />
             </div>
-            {/* flex-1 (no min-h-0 here): this card grows to fill whatever
-                EXTRA height is left over in the left column, but — unlike
-                min-h-0 — can never be squeezed smaller than its own content
-                needs. That distinction matters: a version of this that also
-                had min-h-0 let the grid's real content escape a
-                too-small box with nothing to contain it, which is what
-                caused the two rows of circles to overlap. */}
-            <div className={`${PANEL_CLASSES} flex flex-1 flex-col`}>
+            {/* flex-1 only from md up (no min-h-0 here): at md+, `workspace`
+                below is display:grid, where flex-1 is inert and the column's
+                real height comes from grid's default stretch — so this card
+                grows to fill the column there, same as before. Below md,
+                `workspace` is a real flex-col, and a bare flex-1 here (and
+                on this LEFT column, above) meant "grow to consume ALL
+                leftover page height" twice over — that's what made this
+                card balloon to fill the whole screen on phones even though
+                its own content (the grid + footer) only needs ~150-200px.
+                Dropping flex-1 below md makes this card content-sized
+                there; min-h-0 is still deliberately absent so it can never
+                be squeezed smaller than its content needs either (that's
+                what prevented the two rows of circles from overlapping). */}
+            <div className={`${PANEL_CLASSES} flex flex-col md:flex-1`}>
               <DigitProbabilityRow />
             </div>
 
